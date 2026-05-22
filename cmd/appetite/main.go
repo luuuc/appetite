@@ -1,17 +1,17 @@
+// Command appetite is the CLI entry point. It is intentionally tiny:
+// argv goes to internal/cli.Main, the returned exit code goes to
+// os.Exit. Everything else — parsing, dispatch, workflow calls,
+// rendering — lives in internal/cli and internal/workflow. This
+// keeps main coverage-able via subprocess tests in main_test.go
+// without importing main.
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/luuuc/appetite/internal/version"
+	"github.com/luuuc/appetite/internal/cli"
 )
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "version" {
-		fmt.Println(version.Version)
-		return
-	}
-	fmt.Fprintln(os.Stderr, "appetite: not yet implemented (see .doc/pitches/ for the build plan)")
-	os.Exit(1)
+	os.Exit(cli.Main(os.Args[1:], cli.DefaultEnv()))
 }
