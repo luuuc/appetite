@@ -1,14 +1,26 @@
-.PHONY: build test clean install lint ci run
+.PHONY: build test test-coverage clean install lint ci run
 
 VERSION ?= dev
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 LDFLAGS := -ldflags="-s -w -X 'github.com/luuuc/appetite/internal/version.Version=$(VERSION)'"
 
+COVER_PKGS := ./internal/workflow,./internal/cli,./cmd/appetite
+
 build:
 	go build $(LDFLAGS) -trimpath -o bin/appetite ./cmd/appetite
 
+# test runs the suite with coverage and then gates on the 90% floor
+# for the workflow/cli/cmd packages. The pitch makes this gate
+# non-negotiable: sub-90% files do not merge.
 test:
-	go test -v ./...
+	go test -coverprofile=coverage.out -coverpkg=$(COVER_PKGS) ./...
+	go run ./tools/check-coverage coverage.out
+
+# test-coverage prints the per-function report (useful when the gate
+# fails and you want to see exactly which functions are short).
+test-coverage:
+	go test -coverprofile=coverage.out -coverpkg=$(COVER_PKGS) ./...
+	go tool cover -func=coverage.out
 
 clean:
 	rm -rf bin/ dist/

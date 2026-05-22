@@ -4,3 +4,20 @@ linters:
   enable:
     - errcheck
     - staticcheck
+  settings:
+    errcheck:
+      # CLI commands print to env.Stdout/Stderr. Write errors there
+      # are unrecoverable (terminal closed) and not worth handling at
+      # every call site.
+      exclude-functions:
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (*os.File).Close
+  exclusions:
+    # os.WriteFile is excluded only in test files: tests use it for
+    # fixture setup where a subsequent read will fail loudly if the
+    # write failed. Production code must still handle the error.
+    rules:
+      - linters: [errcheck]
+        path: _test\.go
+        text: "Error return value of `os.WriteFile`"
