@@ -1,6 +1,9 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // HillPosition is the coarse position of a card on the hill chart.
 // There are only two values: uphill (figuring it out) and downhill
@@ -29,9 +32,10 @@ type Card struct {
 	Pitch string `yaml:"pitch"`
 	Cycle string `yaml:"cycle"`
 
-	Hill     HillPosition `yaml:"hill"`
-	Progress int          `yaml:"progress"` // 0-100
-	Assigned string       `yaml:"assigned,omitempty"`
+	Hill          HillPosition `yaml:"hill"`
+	Progress      int          `yaml:"progress"` // 0-100
+	HillUpdatedAt *time.Time   `yaml:"hill_updated_at,omitempty"`
+	Assigned      string       `yaml:"assigned,omitempty"`
 
 	DoneLooksLike []string `yaml:"done_looks_like,omitempty"`
 
