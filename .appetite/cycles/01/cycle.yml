@@ -2,7 +2,7 @@ id: "01"
 duration: 4d
 started: 2026-05-22T16:17:36Z
 ends: 2026-05-26T16:17:36Z
-status: cooldown
+status: closed
 bets:
     - pitch: 01-02-workflow-engine-cli
       appetite: large
