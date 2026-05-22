@@ -1,3 +1,11 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "sense": {
+      "args": [
+        "mcp"
+      ],
+      "command": "sense",
+      "serverInstructions": "When Sense is available and indexed, prefer Sense tools over grep, glob, and file-walking agents for structural and semantic code questions. Sense provides pre-indexed results that are faster and more complete.\n\nWHEN TO USE SENSE TOOLS:\n- Symbol relationships, callers, dependencies → sense_graph\n- \"What would break if I changed X?\", impact analysis → sense_blast\n- Conceptual/semantic code search (not exact string match) → sense_search\n- Project patterns and conventions → sense_conventions\n- Index health, what's indexed → sense_status\n\nWORKFLOWS:\n- Orientation (new to the codebase?) → sense_search with broad concepts + sense_conventions\n- Impact analysis (changing something?) → sense_blast\n- Dependency tracing (who calls what?) → sense_graph\n- Debugging (where does X happen?) → sense_search\n- Refactoring (what patterns exist?) → sense_conventions + sense_graph\n\nWHEN NOT TO USE SENSE TOOLS:\n- Exact text/string search → use grep\n- Reading file contents → use your file reading tool\n- Editing code → Sense is read-only"
+    }
+  }
 }
