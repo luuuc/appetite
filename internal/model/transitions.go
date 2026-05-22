@@ -10,7 +10,7 @@ import (
 // errors.Is; the wrapped error carries the from/to/kind context.
 var ErrInvalidTransition = errors.New("invalid transition")
 
-// The state machine is encoded from .doc/definition/05-workflow.md.
+// The state machine is encoded from .doc/definition/03-workflow.md.
 // Keep it strict — adding a skipped state is not a bug fix, it is a
 // design change.
 var (
