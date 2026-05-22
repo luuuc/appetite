@@ -1,0 +1,12 @@
+id: "01"
+duration: 4d
+started: 2026-05-22T16:17:36Z
+ends: 2026-05-26T16:17:36Z
+status: cooldown
+bets:
+    - pitch: 01-02-workflow-engine-cli
+      appetite: large
+      bet_at: 2026-05-22T16:19:17Z
+    - pitch: 01-03-dogfood-release
+      appetite: small
+      bet_at: 2026-05-22T16:19:17Z
