@@ -2,7 +2,7 @@
 slug: 02-02-slash-commands-dogfood
 title: Slash Commands + Real-Cycle Dogfood
 appetite: small
-status: shaped
+status: building
 shaped_at: 2026-05-22T18:05:38Z
 ---
 ## Problem

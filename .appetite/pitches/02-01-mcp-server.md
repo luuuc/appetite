@@ -2,7 +2,7 @@
 slug: 02-01-mcp-server
 title: MCP Server
 appetite: large
-status: shaped
+status: building
 shaped_at: 2026-05-22T18:05:38Z
 ---
 ## Problem
