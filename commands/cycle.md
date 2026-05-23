@@ -36,6 +36,6 @@ Sync proposals: <none in v0.1>
 
 Surface any `stuck` warnings prominently — they are the loudest signal the cycle is in trouble.
 
-On `-32003` (no active cycle), say so and suggest `/open-cycle <id> <duration>`.
+On `-32003` (no active cycle), say so and suggest `/appetite:open-cycle <id> <duration>`.
 
 See `.doc/definition/08-ai-workflow.md` for the canonical loop semantics.

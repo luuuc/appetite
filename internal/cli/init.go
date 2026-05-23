@@ -137,10 +137,14 @@ var errInitCommandsDiverged = errors.New("init: commands diverged")
 
 // targetCommandsDir resolves the per-tool commands directory. The
 // pitch only ships `claude` this cycle; other tools are reserved.
+// Claude commands install under an `appetite/` subdirectory so they
+// don't collide with whatever else lives in `.claude/commands/`;
+// Claude Code's subdir convention turns this into the `/appetite:`
+// slash-command namespace at invocation time.
 func targetCommandsDir(tool string) (string, error) {
 	switch tool {
 	case "claude":
-		return filepath.Join(".claude", "commands"), nil
+		return filepath.Join(".claude", "commands", "appetite"), nil
 	default:
 		return "", fmt.Errorf("%w: --commands %q (only `claude` is supported in v0.1)",
 			errInitUnknownTool, tool)

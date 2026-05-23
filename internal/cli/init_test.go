@@ -38,11 +38,21 @@ func TestInitInstallsCommandsForClaude(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("code %d", code)
 	}
-	if !strings.Contains(out, "installed 2 commands into .claude/commands") {
+	wantTarget := filepath.Join(".claude", "commands", "appetite")
+	if !strings.Contains(out, "installed 2 commands into "+wantTarget) {
 		t.Errorf("stdout = %q", out)
 	}
-	if _, err := os.Stat(filepath.Join(".claude", "commands", "signal.md")); err != nil {
-		t.Errorf("signal.md missing: %v", err)
+	if _, err := os.Stat(filepath.Join(wantTarget, "signal.md")); err != nil {
+		t.Errorf("signal.md missing under appetite/: %v", err)
+	}
+	// `.claude/commands/` itself stays free of appetite files so it
+	// doesn't collide with bootstrap commands the operator already
+	// has installed there.
+	if _, err := os.Stat(filepath.Join(".claude", "commands", "signal.md")); !os.IsNotExist(err) {
+		t.Errorf("top-level .claude/commands/signal.md should not exist (err=%v)", err)
+	}
+	if _, err := os.Stat(filepath.Join(".claude", "commands", "shape.md")); !os.IsNotExist(err) {
+		t.Errorf("top-level .claude/commands/shape.md should not exist (err=%v)", err)
 	}
 }
 
@@ -68,7 +78,7 @@ func TestInitCommandsRejectsDivergentContentWithoutForce(t *testing.T) {
 	chdir(t, t.TempDir())
 
 	// Pre-place a divergent file in the target.
-	target := filepath.Join(".claude", "commands")
+	target := filepath.Join(".claude", "commands", "appetite")
 	if err := os.MkdirAll(target, 0o755); err != nil {
 		t.Fatalf("mkdir target: %v", err)
 	}
@@ -93,7 +103,7 @@ func TestInitCommandsForceOverwritesDivergent(t *testing.T) {
 	withTempCommandsSource(t, map[string]string{"signal.md": "# signal v2\n"})
 	chdir(t, t.TempDir())
 
-	target := filepath.Join(".claude", "commands")
+	target := filepath.Join(".claude", "commands", "appetite")
 	if err := os.MkdirAll(target, 0o755); err != nil {
 		t.Fatalf("mkdir target: %v", err)
 	}

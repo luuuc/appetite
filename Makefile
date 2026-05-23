@@ -11,10 +11,14 @@ build:
 
 # test runs the suite with coverage and then gates on the 90% floor
 # for the workflow/cli/cmd packages. The pitch makes this gate
-# non-negotiable: sub-90% files do not merge.
+# non-negotiable: sub-90% files do not merge. The doc-drift gate
+# runs next; it is a graceful no-op when `.doc/definition/` is
+# absent (fresh clones, CI runners), and only fires locally where
+# the operator keeps the private workspace.
 test:
 	go test -coverprofile=coverage.out -coverpkg=$(COVER_PKGS) ./...
 	go run ./tools/check-coverage coverage.out
+	go run ./tools/check-doc-drift
 
 # test-coverage prints the per-function report (useful when the gate
 # fails and you want to see exactly which functions are short).
