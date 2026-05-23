@@ -17,15 +17,6 @@ const (
 	KindCooldown Kind = "cooldown"
 )
 
-// Valid reports whether k is a known entity kind.
-func (k Kind) Valid() bool {
-	switch k {
-	case KindSignal, KindPitch, KindCycle, KindCard, KindCooldown:
-		return true
-	}
-	return false
-}
-
 // Entity is implemented by every stored type. Kind and Path let the
 // storage adapter handle entities uniformly without type switches in
 // the hot path.
