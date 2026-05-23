@@ -2,7 +2,7 @@ id: "03"
 duration: 4d
 started: 2026-05-23T09:37:28Z
 ends: 2026-05-27T09:37:28Z
-status: shipping
+status: cooldown
 bets:
     - pitch: 03-01-doc-drift-checks-as-test-targets
       appetite: small
