@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -27,6 +28,12 @@ const (
 // at a different tree.
 const defaultDocDir = ".doc/definition"
 
+// defaultBinaryPath is where `make build` lands the appetite binary
+// that the checker introspects via `-h`. Overridable via `-binary`
+// for the rare case the operator runs the gate against a non-default
+// build output.
+const defaultBinaryPath = "./bin/appetite"
+
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
 }
@@ -39,6 +46,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("check-doc-drift", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	docDir := fs.String("doc", defaultDocDir, "directory containing definition docs")
+	binary := fs.String("binary", defaultBinaryPath, "path to the appetite binary under test")
 	if err := fs.Parse(args); err != nil {
 		return exitInternal
 	}
@@ -59,12 +67,28 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitOK
 	}
 
-	// Cards 03-01#2 (CLI flag surface) and 03-01#3 (MCP tool list)
-	// add their contracts here. With no contracts wired the skeleton
-	// reports a clean pass — drift can only be found once a check
-	// knows what to compare against.
-	fmt.Fprintln(stdout, "check-doc-drift: contracts match")
-	return exitOK
+	docPath := filepath.Join(*docDir, canonicalDocFile)
+	f, err := os.Open(docPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "check-doc-drift: open %s: %v\n", docPath, err)
+		return exitInternal
+	}
+	defer f.Close()
+
+	drifts, err := checkCLIFlagSurface(docPath, canonicalDocFile, *binary, f)
+	if err != nil {
+		fmt.Fprintf(stderr, "check-doc-drift: %v\n", err)
+		return exitInternal
+	}
+	if len(drifts) == 0 {
+		fmt.Fprintln(stdout, "check-doc-drift: contracts match")
+		return exitOK
+	}
+	fmt.Fprintln(stderr, "doc-drift: CLI flag surface diverged:")
+	for _, d := range drifts {
+		fmt.Fprintln(stderr, "  "+d)
+	}
+	return exitDrift
 }
 
 // dirPresent reports whether path exists and is a directory. Returns
