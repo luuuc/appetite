@@ -2,7 +2,7 @@
 slug: 03-01-doc-drift-checks-as-test-targets
 title: Doc-Drift Checks as Test Targets
 appetite: small
-status: building
+status: shipped
 shaped_at: 2026-05-23T09:33:56Z
 shaped_from: [2026-05-22-02-01-card-6-appetite]
 ---
