@@ -1,0 +1,12 @@
+id: "03"
+duration: 4d
+started: 2026-05-23T09:37:28Z
+ends: 2026-05-27T09:37:28Z
+status: building
+bets:
+    - pitch: 03-01-doc-drift-checks-as-test-targets
+      appetite: small
+      bet_at: 2026-05-23T09:37:34Z
+    - pitch: 03-02-claude-commands-namespace
+      appetite: small
+      bet_at: 2026-05-23T09:37:34Z
