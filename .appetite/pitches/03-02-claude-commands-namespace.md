@@ -2,7 +2,7 @@
 slug: 03-02-claude-commands-namespace
 title: Namespace Claude Slash Commands Under appetite/
 appetite: small
-status: building
+status: shipped
 shaped_at: 2026-05-23T09:36:15Z
 shaped_from: [2026-05-22-appetite-init-commands-claude-shares]
 ---
