@@ -4,7 +4,7 @@ VERSION ?= dev
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 LDFLAGS := -ldflags="-s -w -X 'github.com/luuuc/appetite/internal/version.Version=$(VERSION)'"
 
-COVER_PKGS := ./internal/workflow,./internal/cli,./cmd/appetite
+COVER_PKGS := ./internal/workflow,./internal/cli,./internal/mcp,./cmd/appetite
 
 build:
 	go build $(LDFLAGS) -trimpath -o bin/appetite ./cmd/appetite

@@ -27,6 +27,7 @@ const floor = 90.0
 var watched = []string{
 	"github.com/luuuc/appetite/internal/workflow/",
 	"github.com/luuuc/appetite/internal/cli/",
+	"github.com/luuuc/appetite/internal/mcp/",
 	"github.com/luuuc/appetite/cmd/appetite/",
 }
 
