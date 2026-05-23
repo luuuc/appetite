@@ -100,4 +100,7 @@ func TestValidateCooldownTransition(t *testing.T) {
 	if err := model.ValidateCooldownTransition(model.CooldownActive, model.CooldownActive); err == nil {
 		t.Error("active → active (same state): expected ErrInvalidTransition, got nil")
 	}
+	if err := model.ValidateCooldownTransition(model.CooldownStatus("garbage"), model.CooldownClosed); err == nil {
+		t.Error("unknown from-status: expected ErrInvalidTransition, got nil")
+	}
 }

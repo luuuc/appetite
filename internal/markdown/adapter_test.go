@@ -254,6 +254,38 @@ func TestFrontmatterEdgeCases(t *testing.T) {
 	})
 }
 
+func TestCardCycleReconstructedFromPath(t *testing.T) {
+	// A card on disk whose YAML frontmatter has no `cycle:` field must
+	// still come back with Cycle populated — the adapter reconstructs it
+	// from the parent directory (cycles/<id>/cards/<slug>.md). Hand-edits
+	// or partial migrations can drop the field; the fallback keeps reads
+	// working.
+	root := t.TempDir()
+	a := markdown.New(root)
+	ctx := context.Background()
+
+	rel := "cycles/2026-w15/cards/orphan.md"
+	abs := filepath.Join(root, rel)
+	if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	content := "---\nslug: orphan\npitch: csv-export\nhill: uphill\nprogress: 0\n---\nbody\n"
+	if err := os.WriteFile(abs, []byte(content), 0o644); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+
+	got, err := store.ReadAs[model.Card](ctx, a, rel)
+	if err != nil {
+		t.Fatalf("ReadAs: %v", err)
+	}
+	if got.Cycle != "2026-w15" {
+		t.Errorf("Cycle = %q, want %q (reconstructed from path)", got.Cycle, "2026-w15")
+	}
+	if got.Slug != "orphan" {
+		t.Errorf("Slug = %q, want %q", got.Slug, "orphan")
+	}
+}
+
 func TestPathTraversalBlocked(t *testing.T) {
 	root := t.TempDir()
 	a := markdown.New(root)
