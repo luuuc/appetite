@@ -8,6 +8,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -47,6 +48,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	docDir := fs.String("doc", defaultDocDir, "directory containing definition docs")
 	binary := fs.String("binary", defaultBinaryPath, "path to the appetite binary under test")
+	mcpSrc := fs.String("mcp-source", defaultMCPSourceFile, "path to the Go source file holding the MCP dispatch table")
 	if err := fs.Parse(args); err != nil {
 		return exitInternal
 	}
@@ -68,25 +70,46 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 
 	docPath := filepath.Join(*docDir, canonicalDocFile)
-	f, err := os.Open(docPath)
+	docBytes, err := os.ReadFile(docPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "check-doc-drift: open %s: %v\n", docPath, err)
 		return exitInternal
 	}
-	defer f.Close()
 
-	drifts, err := checkCLIFlagSurface(docPath, canonicalDocFile, *binary, f)
+	cliDrifts, err := checkCLIFlagSurface(docPath, canonicalDocFile, *binary, bytes.NewReader(docBytes))
 	if err != nil {
 		fmt.Fprintf(stderr, "check-doc-drift: %v\n", err)
 		return exitInternal
 	}
-	if len(drifts) == 0 {
+
+	src, err := os.Open(*mcpSrc)
+	if err != nil {
+		fmt.Fprintf(stderr, "check-doc-drift: open %s: %v\n", *mcpSrc, err)
+		return exitInternal
+	}
+	defer src.Close()
+	mcpDrifts, err := checkMCPToolList(canonicalDocFile, bytes.NewReader(docBytes), *mcpSrc, src)
+	if err != nil {
+		fmt.Fprintf(stderr, "check-doc-drift: %v\n", err)
+		return exitInternal
+	}
+
+	all := append(cliDrifts, mcpDrifts...)
+	if len(all) == 0 {
 		fmt.Fprintln(stdout, "check-doc-drift: contracts match")
 		return exitOK
 	}
-	fmt.Fprintln(stderr, "doc-drift: CLI flag surface diverged:")
-	for _, d := range drifts {
-		fmt.Fprintln(stderr, "  "+d)
+	if len(cliDrifts) > 0 {
+		fmt.Fprintln(stderr, "doc-drift: CLI flag surface diverged:")
+		for _, d := range cliDrifts {
+			fmt.Fprintln(stderr, "  "+d)
+		}
+	}
+	if len(mcpDrifts) > 0 {
+		fmt.Fprintln(stderr, "doc-drift: MCP tool list diverged:")
+		for _, d := range mcpDrifts {
+			fmt.Fprintln(stderr, "  "+d)
+		}
 	}
 	return exitDrift
 }

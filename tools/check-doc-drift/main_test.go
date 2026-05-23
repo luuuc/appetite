@@ -37,6 +37,20 @@ func writeDocFile(t *testing.T, dir, body string) string {
 	return path
 }
 
+// writeMCPSource drops a minimal Go file that mirrors the shape of
+// `internal/mcp/tools.go` — just enough for the MCP tool-list
+// checker to find handler entries. The body argument is appended
+// verbatim inside the dispatch map.
+func writeMCPSource(t *testing.T, body string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "tools.go")
+	src := "package mcp\nfunc defaultMethods(s *Server) map[string]Handler {\n\treturn map[string]Handler{\n" + body + "\n\t}\n}\n"
+	if err := os.WriteFile(path, []byte(src), 0o644); err != nil {
+		t.Fatalf("write mcp source: %v", err)
+	}
+	return path
+}
+
 func TestRunPassesWhenDocDirAbsent(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "definitely-not-here")
 	var stdout, stderr bytes.Buffer
@@ -64,7 +78,8 @@ esac
 `)
 
 	var stdout, stderr bytes.Buffer
-	code := run([]string{"-doc", docDir, "-binary", bin}, &stdout, &stderr)
+	mcpSrc := writeMCPSource(t, "")
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", mcpSrc}, &stdout, &stderr)
 
 	if code != exitOK {
 		t.Errorf("code = %d (stderr=%q), want %d", code, stderr.String(), exitOK)
@@ -84,7 +99,8 @@ esac
 `)
 
 	var stdout, stderr bytes.Buffer
-	code := run([]string{"-doc", docDir, "-binary", bin}, &stdout, &stderr)
+	mcpSrc := writeMCPSource(t, "")
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", mcpSrc}, &stdout, &stderr)
 
 	if code != exitDrift {
 		t.Errorf("code = %d, want %d", code, exitDrift)
@@ -103,7 +119,8 @@ esac
 `)
 
 	var stdout, stderr bytes.Buffer
-	code := run([]string{"-doc", docDir, "-binary", bin}, &stdout, &stderr)
+	mcpSrc := writeMCPSource(t, "")
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", mcpSrc}, &stdout, &stderr)
 
 	if code != exitDrift {
 		t.Errorf("code = %d, want %d", code, exitDrift)
@@ -125,7 +142,8 @@ esac
 `)
 
 	var stdout, stderr bytes.Buffer
-	code := run([]string{"-doc", docDir, "-binary", bin}, &stdout, &stderr)
+	mcpSrc := writeMCPSource(t, "")
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", mcpSrc}, &stdout, &stderr)
 
 	if code != exitDrift {
 		t.Errorf("code = %d, want %d", code, exitDrift)
@@ -146,7 +164,8 @@ esac
 `)
 
 	var stdout, stderr bytes.Buffer
-	code := run([]string{"-doc", docDir, "-binary", bin}, &stdout, &stderr)
+	mcpSrc := writeMCPSource(t, "")
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", mcpSrc}, &stdout, &stderr)
 
 	if code != exitOK {
 		t.Errorf("code = %d (stderr=%q), want %d", code, stderr.String(), exitOK)
@@ -210,6 +229,39 @@ func TestRunReturnsInternalErrorWhenCanonicalDocMissing(t *testing.T) {
 	}
 }
 
+func TestRunReturnsInternalErrorWhenMCPSourceMissing(t *testing.T) {
+	docDir := t.TempDir()
+	writeDocFile(t, docDir, "")
+	bin := writeFakeBinary(t, t.TempDir(), `exit 0`)
+	missing := filepath.Join(t.TempDir(), "no-such-tools.go")
+
+	var stdout, stderr bytes.Buffer
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", missing}, &stdout, &stderr)
+
+	if code != exitInternal {
+		t.Errorf("code = %d, want %d", code, exitInternal)
+	}
+	if !strings.Contains(stderr.String(), "open") {
+		t.Errorf("stderr = %q, want open-error", stderr.String())
+	}
+}
+
+func TestRunReturnsInternalErrorWhenMCPSourceIsADirectory(t *testing.T) {
+	// os.Open succeeds on a directory but reading from it fails;
+	// the resulting scanner error must reach run() as exit 2.
+	docDir := t.TempDir()
+	writeDocFile(t, docDir, "")
+	bin := writeFakeBinary(t, t.TempDir(), `exit 0`)
+	dirAsSource := t.TempDir()
+
+	var stdout, stderr bytes.Buffer
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", dirAsSource}, &stdout, &stderr)
+
+	if code != exitInternal {
+		t.Errorf("code = %d, want %d", code, exitInternal)
+	}
+}
+
 func TestRunSurfacesParseError(t *testing.T) {
 	// An unterminated quoted string in a fenced bash block makes the
 	// tokenizer return an error; run() should turn that into exit 2.
@@ -218,7 +270,8 @@ func TestRunSurfacesParseError(t *testing.T) {
 	bin := writeFakeBinary(t, t.TempDir(), `exit 0`)
 
 	var stdout, stderr bytes.Buffer
-	code := run([]string{"-doc", docDir, "-binary", bin}, &stdout, &stderr)
+	mcpSrc := writeMCPSource(t, "")
+	code := run([]string{"-doc", docDir, "-binary", bin, "-mcp-source", mcpSrc}, &stdout, &stderr)
 	if code != exitInternal {
 		t.Errorf("code = %d, want %d", code, exitInternal)
 	}
