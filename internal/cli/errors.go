@@ -16,7 +16,9 @@ func exitCodeFor(err error) int {
 	case err == nil:
 		return 0
 	case errors.Is(err, workflow.ErrInvalidTransition),
-		errors.Is(err, workflow.ErrDoneCriteriaUnmet):
+		errors.Is(err, workflow.ErrDoneCriteriaUnmet),
+		errors.Is(err, errInitUnknownTool),
+		errors.Is(err, errInitCommandsDiverged):
 		return 2
 	case errors.Is(err, workflow.ErrNotFound):
 		return 3

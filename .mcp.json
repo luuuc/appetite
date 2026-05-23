@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "appetite": {
+      "command": "./bin/appetite",
+      "args": ["mcp", "--dir", ".appetite"]
+    },
     "sense": {
       "args": [
         "mcp"
